@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Projects & Technical Work</title>
+  <link id="page_style" rel="stylesheet" href="styling_1.css">
+</head>
+<body>
+
+  <nav class="site-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="portfolio.html">Technical Portfolio</a></li>
+      <li><a href="qualifications.html">Qualifications</a></li>
+      <li><a href="service.html">Service & Community</a></li>
+      <li><a href="ai.html">AI Garden</a></li>
+      <li style="margin-left:12px"><button id="theme-toggle" type="button">Switch to Style 2</button></li>
+    </ul>
+  </nav>
+
+  <div class="site">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="headshot" src="headshot.jpeg" alt="Jill headshot">
+        <div>
+          <h3 class="name">Jill Chaudhari</h3>
+          <p class="subtitle">CSCE @ Texas A&M</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="portfolio.html">Technical Portfolio</a>
+        <a href="qualifications.html">Qualifications</a>
+        <a href="service.html">Service & Community</a>
+        <a href="ai.html">AI Garden</a>
+      </nav>
+          <button id="theme-toggle-s2" type="button" class="toggle-btn">Switch to Style 1</button>
+      <div class="footer">© 2025 Jill Chaudhari</div>
+    </aside>
+
+    <main class="main">
+      <section class="band band-green">
+        <div class="wrapper">
+          <h1 class="section-title">Projects</h1>
+        </div>
+      </section>
+
+
+    <section class="project band band-pink">
+      <div class="wrapper">
+        <div class="text">
+            <h2>WasteWise – AI-Powered Waste Classification Web App</h2>
+            <p>
+                WasteWise is a full-stack web app I designed to classify waste items as 
+                Recyclable, Compostable, Trash, or Hazardous using AI-powered NLP models
+                 from Hugging Face. The app integrates barcode scanning and the OpenFoodFacts 
+                 API for real-time product lookup and classification. I developed a mobile-responsive 
+                 frontend using React.js and Tailwind CSS, while the backend is built with Node.js 
+                 and Express. Firebase Authentication, Firestore logging, and interactive Recharts
+                dashboards allow users to track their waste patterns over time.
+            </p>
+          <p>
+            Explore it on
+            <a href="https://github.com/jillchaudhari-tamu/wastewise-frontend" target="_blank" rel="noopener">GitHub</a>.
+          </p>
+        </div>
+      <div class="media media-row">
+        <img class="project-img wastewise-img" src="wastewise-pic-1.png" alt="WasteWise home screen">
+        <img class="project-img wastewise-img" src="wastewise-pic-2.png" alt="WasteWise scanning flow">
+      </div>
+    </div>
+</section>
+
+    <section class="project band band-green reverse">
+      <div class="wrapper">
+        <div class="text">
+            <h2>Chest X-ray Classification (Hackathon Project)</h2>
+            <p>
+                In this project, I built a multi-label image classification pipeline using 
+                pretrained CNNs (VGG16, ResNet50, EfficientNet) for chest X-ray datasets. 
+                I applied transfer learning, data augmentation, checkpointing, and early 
+                stopping to improve model generalization. A Flask API serves real-time predictions, 
+                while training metrics are visualized with Matplotlib and TensorBoard.
+            </p>
+            <p>
+            Project page on
+            <a href="https://devpost.com/software/pneumonia-predictor" target="_blank" rel="noopener">Devpost</a>.
+          </p>
+        </div>
+        <div class="media">
+          <img src="xray.png" alt="Chest X-ray Classification output">
+        </div>
+      </div>
+    </section>
+
+    <section class="project band band-pink">
+      <div class="wrapper">
+        <div class="text">
+            <h2>Urban Resilience.AI Lab – Machine Learning Research</h2>
+            <p>
+                As an undergraduate researcher, I developed machine learning models with
+                TensorFlow and Scikit-learn to predict flood-induced pollutant dispersion 
+                from over 230 toxic facilities along the Texas coast. I analyzed 100,000+ 
+                geospatial and demographic data points using Pandas and NumPy to identify 
+                high-risk areas and underserved communities. I also designed spatial buffer 
+                zones (1–5 miles), integrated ML outputs with census data, and presented 
+                findings to stakeholders and policymakers.
+            </p>
+            <p>
+                This research enhanced my skills in geospatial analysis, predictive modeling, 
+                and translating technical results into actionable insights for real-world 
+                environmental issues. Learn more about the <a href="https://www.urbanresilience.ai/" target="_blank">Urban Resilience.AI Lab</a>.
+            </p>
+        </div>
+        <div class="media">
+          <img src="urbanresilienceailab.jpeg" alt="Urban Resilience.AI Lab project">
+        </div>
+      </div>
+    </section>
+
+    <section class="project band band-green reverse">
+      <div class="wrapper">
+        <div class="text">
+            <h2>Toyota Commercial Finance – AI Assistant Prototype</h2>
+            <p>
+                During my Software Engineering internship, I developed an AI assistant 
+                using large language models and NLP to automate internal support queries 
+                with 85% accuracy. I contributed to backend services using SQL and Microsoft 
+                Azure and optimized cloud-based data pipelines to enhance performance.
+            </p>
+            <p>
+                This project strengthened my experience in cloud computing, backend development, 
+                and applying AI to practical business problems.
+            </p>
+            </div>
+        <div class="media">
+          <img class="project-img toyota-img" src="ticf_logo.jpg?v=3" alt="Toyota logo" />
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+ <script src="functions.js"></script>
+</body>
+</html>
+

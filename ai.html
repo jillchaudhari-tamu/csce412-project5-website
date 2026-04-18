@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Garden — Generative Flowers</title>
+
+  <!-- IMPORTANT: AI page uses its own CSS (not theme-swapped) -->
+  <link rel="stylesheet" href="ai_style.css" />
+</head>
+<body>
+  <!-- Fixed top nav for AI page -->
+  <nav class="site-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="portfolio.html">Technical Portfolio</a></li>
+      <li><a href="qualifications.html">Qualifications</a></li>
+      <li><a href="service.html">Service & Community</a></li>
+      <li><a href="ai.html">AI Page</a></li>
+      <!-- Keep the toggle button visible on AI page (updates saved theme only) -->
+      <li style="margin-left:12px">
+        <button id="theme-toggle" type="button">Switch Theme</button>
+      </li>
+    </ul>
+  </nav>
+
+  <header class="band band-header">
+    <div class="wrapper">
+      <h1 class="section-title">AI Garden — Generative Flowers from Your Prompt</h1>
+      <p class="note">Type a theme (e.g., “pastel garden with tulips and butterflies at night”), then Generate.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="band">
+      <div class="wrapper">
+        <div class="controls">
+          <input id="promptInput" type="text" placeholder="Describe your garden..."
+                 value="pastel spring garden with tulips, daisies, butterflies" />
+          <button id="genBtn" class="btn">Generate</button>
+          <button id="randBtn" class="btn btn--outline">Randomize</button>
+          <button id="dlBtn" class="btn btn--outline">Download PNG</button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="garden" aria-label="AI-generated flower garden"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrapper">
+        <h3>Prompt used to generate this page’s code</h3>
+        <pre id="usedPrompt" class="prompt-pre"></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Your existing canvas code (unchanged logic) -->
+  <script>
+    /* deterministic RNG helpers */
+    function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return function(){h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);return (h^=h>>>16)>>>0;};}
+    function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+
+    function buildMetaPrompt(theme){return [
+      "Create a single HTML file with inline CSS (minimal) and vanilla JavaScript (no libraries) that:",
+      "• Draws a generative flower garden on an HTML5 <canvas>.",
+      "• The garden aesthetics should reflect this theme: \""+theme+"\".",
+      "• Use a deterministic PRNG so the same theme yields the same result; also include a \"Randomize\" control to vary the seed.",
+      "• Include UI controls: a text input for the theme, a \"Generate\" button, a \"Randomize\" button, and a \"Download PNG\" button.",
+      "• Canvas must be responsive and crisp on HiDPI (scale by devicePixelRatio).",
+      "• Show the exact code-generation prompt (this block) below the canvas.",
+      "• Keep the code clean, commented lightly, and do not use any external libraries or frameworks."
+    ].join("\\n");}
+
+    function parsePrompt(p){
+      const s=p.toLowerCase();
+      const night=/night|moon|stars|evening/.test(s);
+      const pastel=/pastel|soft|muted/.test(s);
+      const dense=/meadow|field|lush|wild/.test(s);
+      const bouquet=/bouquet|arrangement|vase/.test(s);
+      const butterflies=/butterfly|butterflies/.test(s);
+
+      const colorsByWord={red:"#ef476f",pink:"#ffb3c6",purple:"#b39ddb",violet:"#b39ddb",yellow:"#ffd166",blue:"#90caf9",sky:"#90caf9",green:"#81d18b",orange:"#ffb86b",white:"#ffffff"};
+      const palette=[];
+      for(const w in colorsByWord){ if(s.includes(w)) palette.push(colorsByWord[w]); }
+      if(palette.length===0){ palette.push("#ffb3c6","#b7f0c0","#ffd166","#a3c4f3","#cdb4db"); }
+      if(pastel){ for(let i=0;i<palette.length;i++){ palette[i]=lighten(palette[i],0.18); } }
+
+      const types=[];
+      if(/tulip|tulips/.test(s)) types.push("tulip");
+      if(/daisy|daisies/.test(s)) types.push("daisy");
+      if(/rose|roses/.test(s)) types.push("rose");
+      if(/sunflower|sunflowers/.test(s)) types.push("sunflower");
+      if(/lily|lilies/.test(s)) types.push("lily");
+      if(types.length===0) types.push("daisy","tulip");
+
+      let count=26; if(dense) count=46; if(bouquet) count=14;
+      return {night,pastel,butterflies,palette,types,count};
+    }
+
+    function lighten(hex,amt){
+      const c=hex.replace('#','');let r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+      r=Math.min(255,Math.round(r+255*amt));g=Math.min(255,Math.round(g+255*amt));b=Math.min(255,Math.round(b+255*amt));
+      return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+    }
+
+    function resizeCanvasTo(container,canvas,targetH=560){
+      const dpr=Math.max(1,window.devicePixelRatio||1);
+      const cssW=Math.max(320,Math.floor(container.clientWidth));
+      const cssH=targetH;
+      canvas.style.width=cssW+"px"; canvas.style.height=cssH+"px";
+      canvas.width=Math.floor(cssW*dpr); canvas.height=Math.floor(cssH*dpr);
+      const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+      return {ctx,cssW,cssH};
+    }
+    function randRange(r,a,b){return a+r()*(b-a);}
+    function choice(r,arr){return arr[Math.floor(r()*arr.length)];}
+
+    function drawGarden(promptStr,seedBump=0){
+      const parsed=parsePrompt(promptStr);
+      const seed=xmur3(promptStr)()+seedBump;
+      const r=mulberry32(seed);
+
+      const canvas=document.getElementById('garden');
+      const container=canvas.parentElement;
+      const {ctx,cssW,cssH}=resizeCanvasTo(container,canvas,560);
+
+      // background
+      ctx.fillStyle=parsed.night?"#0b1020":"#f7fff7";
+      ctx.fillRect(0,0,cssW,cssH);
+
+      // ground gradient
+      const grd=ctx.createLinearGradient(0,cssH*0.55,0,cssH);
+      grd.addColorStop(0,parsed.night?"#0b3816":"#d6f5d9");
+      grd.addColorStop(1,parsed.night?"#031f0b":"#b7f0c0");
+      ctx.fillStyle=grd; ctx.fillRect(0,cssH*0.58,cssW,cssH*0.42);
+
+      // stems/leaves
+      const flowers=[];
+      for(let i=0;i<parsed.count;i++){
+        const x=randRange(r,40,cssW-40);
+        const baseY=randRange(r,cssH*0.64,cssH*0.88);
+        const h=randRange(r,cssH*0.18,cssH*0.34);
+        flowers.push({x,baseY,h});
+      }
+      flowers.sort((a,b)=>a.baseY-b.baseY);
+      for(const f of flowers){ drawStemAndLeaves(ctx,r,f.x,f.baseY,f.h,parsed.night); }
+
+      // flower heads
+      for(const f of flowers){
+        const kind=choice(r,parsed.types);
+        const color=choice(r,parsed.palette);
+        drawFlowerByType(ctx,r,kind,f.x,f.baseY-f.h,color,parsed.night);
+      }
+
+      // butterflies
+      if(parsed.butterflies){
+        const n=Math.round(parsed.count*0.15);
+        for(let i=0;i<n;i++){
+          drawButterfly(ctx,r,randRange(r,30,cssW-30),randRange(r,cssH*0.12,cssH*0.5),choice(r,parsed.palette));
+        }
+      }
+    }
+
+    function drawStemAndLeaves(ctx,r,x,y,h,night){
+      ctx.strokeStyle=night?"#6abf7a":"#3e8c4c";
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.quadraticCurveTo(x+randRange(r,-10,10),y-h*0.5,x+randRange(r,-8,8),y-h); ctx.stroke();
+      const leaves=1+Math.floor(randRange(r,0,3));
+      for(let i=0;i<leaves;i++){
+        const ly=y-randRange(r,h*0.2,h*0.9);
+        const dir=r()<0.5?-1:1;
+        drawLeaf(ctx,x+dir*2,ly,dir*randRange(r,18,28),randRange(r,8,14),night);
+      }
+    }
+    function drawLeaf(ctx,x,y,w,h,night){
+      ctx.fillStyle=night?"#76d68a":"#56b26a";
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.quadraticCurveTo(x+w*0.5,y-h*0.8,x+w,y);
+      ctx.quadraticCurveTo(x+w*0.5,y+h*0.8,x,y);
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawFlowerByType(ctx,r,type,cx,cy,color,night){
+      const center=night?"#ffe9a3":"#654321";
+      switch(type){
+        case "daisy":     drawPetalFlower(ctx,r,cx,cy,14,22,38,color,center); break;
+        case "tulip":     drawTulip(ctx,r,cx,cy,34,color,center); break;
+        case "rose":      drawRosette(ctx,r,cx,cy,38,color,center); break;
+        case "sunflower": drawPetalFlower(ctx,r,cx,cy,24,26,52,color,"#8c5a20"); break;
+        case "lily":      drawPetalFlower(ctx,r,cx,cy,6,28,46,color,center); break;
+        default:          drawPetalFlower(ctx,r,cx,cy,12,20,34,color,center);
+      }
+    }
+    function drawPetalFlower(ctx,r,cx,cy,petals,inner,outer,color,center){
+      ctx.save(); ctx.translate(cx,cy);
+      for(let i=0;i<petals;i++){
+        const ang=(i/petals)*Math.PI*2+(r()-0.5)*0.04;
+        ctx.rotate(ang); drawPetal(ctx,0,0,inner,outer,color); ctx.rotate(-ang);
+      }
+      ctx.fillStyle=center;
+      ctx.beginPath(); ctx.arc(cx,cy,Math.max(6,inner*0.45),0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    function drawPetal(ctx,x,y,inner,outer,color){
+      const grad=ctx.createLinearGradient(x,y-outer,x,y+inner);
+      grad.addColorStop(0,color); grad.addColorStop(1,"#ffffff");
+      ctx.fillStyle=grad; ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.quadraticCurveTo(x+outer*0.35,y-outer*0.7,x,y-outer);
+      ctx.quadraticCurveTo(x-outer*0.35,y-outer*0.7,x,y);
+      ctx.closePath(); ctx.fill();
+    }
+    function drawTulip(ctx,r,cx,cy,size,color,center){
+      ctx.save(); ctx.translate(cx,cy);
+      ctx.fillStyle=color; ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.bezierCurveTo(size*0.9,-size*0.1,size*0.9,-size*0.9,0,-size);
+      ctx.bezierCurveTo(-size*0.9,-size*0.9,-size*0.9,-size*0.1,0,0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-size*0.5,-size*0.6); ctx.lineTo(-size*0.2,-size*1.05); ctx.lineTo(0,-size*0.6);
+      ctx.lineTo(size*0.2,-size*1.05); ctx.lineTo(size*0.5,-size*0.6); ctx.closePath();
+      ctx.fillStyle=lighten(color,0.12); ctx.fill();
+      ctx.restore();
+    }
+    function drawRosette(ctx,r,cx,cy,size,color,center){
+      ctx.save(); ctx.translate(cx,cy);
+      for(let i=0;i<18;i++){
+        const ang=(i/18)*Math.PI*2;
+        ctx.rotate(ang);
+        ctx.fillStyle=i%2?color:lighten(color,0.15);
+        ctx.beginPath(); ctx.ellipse(0,0,size*0.55,size*0.18,0,0,Math.PI*2); ctx.fill();
+        ctx.rotate(-ang);
+      }
+      ctx.fillStyle=center; ctx.beginPath(); ctx.arc(cx,cy,size*0.18,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    function drawButterfly(ctx,r,x,y,color){
+      ctx.save(); ctx.translate(x,y); ctx.rotate((r()-0.5)*0.8);
+      const c2=lighten(color,0.2);
+      ctx.fillStyle=color; ctx.beginPath();
+      ctx.ellipse(-10,0,16,10,0.6,0,Math.PI*2);
+      ctx.ellipse(10,0,16,10,-0.6,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle=c2; ctx.beginPath();
+      ctx.ellipse(-6,-6,10,6,0.6,0,Math.PI*2);
+      ctx.ellipse(6,-6,10,6,-0.6,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle="#333"; ctx.fillRect(-2,-8,4,16);
+      ctx.restore();
+    }
+
+    // wire up controls
+    let randBump=0;
+    const input=document.getElementById('promptInput');
+    const usedEl=document.getElementById('usedPrompt');
+    const genBtn=document.getElementById('genBtn');
+    const randBtn=document.getElementById('randBtn');
+    const dlBtn=document.getElementById('dlBtn');
+    const canvas=document.getElementById('garden');
+
+    function run(){
+      const theme=input.value.trim();
+      usedEl.textContent=buildMetaPrompt(theme);
+      drawGarden(theme,randBump);
+    }
+
+    genBtn.addEventListener('click',()=>{randBump=0;run();});
+    randBtn.addEventListener('click',()=>{randBump=Math.floor(Math.random()*1e9);run();});
+    input.addEventListener('keydown',(e)=>{if(e.key==='Enter'){randBump=0;run();}});
+    dlBtn.addEventListener('click',()=>{const link=document.createElement('a');link.download='ai-garden.png';link.href=canvas.toDataURL('image/png');link.click();});
+    window.addEventListener('resize',run);
+    run();
+  </script>
+
+  <!-- Load the theme toggle logic so the button updates saved theme for other pages.
+       Safe here: there's no <link id="page_style"> on this page, so the AI page visuals don't change. -->
+  <script src="functions.js"></script>
+</body>
+</html>

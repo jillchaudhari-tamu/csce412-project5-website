@@ -1,0 +1,118 @@
+
+:root{
+  --ink:#222;
+  --bg:#fff;
+  --green:#b7f0c0;
+  --accent2: #0a66c2;
+  --pink:#ffc1e3;
+  --maxw:1040px;
+}
+
+/* BASE FORMAT */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{color:var(--ink);background:var(--bg);line-height:1.5;font-family:Arial,Helvetica,sans-serif}
+img{max-width:100%;height:auto;display:block}
+a{color:#0a66c2;text-decoration:none}
+a:hover{text-decoration:underline}
+.small{font-size:14px;color:#555}
+
+/* LAYOUT */
+.wrapper{max-width:var(--maxw);margin:0 auto;padding:20px}
+.band{padding:44px 0}
+.section-title{margin:0 0 14px;font-size:34px}
+
+/* NAV BAR */
+.site-nav{
+  position:fixed;top:10px;right:12px;z-index:1000;
+  background:#fff;border:1px solid #e0e0e0;border-radius:20px;padding:6px 10px
+}
+.site-nav ul{margin:0;padding:0;list-style:none;display:flex;gap:12px}
+.site-nav a{color:#333;font-weight:600}
+.site-nav a:hover{color:#000}
+
+/* HOME PAGE */
+.hero{background:var(--green)}
+.hero .wrapper{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center}
+.headshot{width:180px;height:180px;border-radius:50%;object-fit:cover;border:3px solid #6ac279}
+.hero h1{margin:0;font-size:44px;line-height:1.1}
+.bubble{background:#fff;padding:6px 10px;border-radius:14px;font-weight:800;color:#000}
+
+/* TWO-TEXT SECTION (home) */
+.two-text .wrapper{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two-text .card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px}
+
+/* CONNECT (home) */
+.connect .wrapper{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 14px;border-radius:999px;font-weight:700;background:#111;color:#fff;border:2px solid #111}
+.btn--outline{background:transparent;color:#111}
+.btn:hover{opacity:.9}
+
+/* PROJECTS (portfolio) */
+.project{padding:36px 0;background:transparent}
+.project .wrapper{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center}
+.project .media{order:2}
+.project.reverse .media{order:1}
+.project .text h2{margin:0 0 12px}
+.project-img{max-width:100%}
+
+/* WasteWise: two images side-by-side */
+.media.media-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;justify-items:center}
+.media.media-row .wastewise-img{width:100%;max-width:none;height:auto;display:block}
+
+/* Toyota image */
+.toyota-img{width:100%;max-width:900px;height:auto;display:block}
+
+/* QUALIFICATIONS */
+.qual-grid .wrapper{display:grid;grid-template-columns:1.25fr 1fr;gap:24px;align-items:start}
+.resume-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:14px}
+
+.band.band-green.qual-grid .wrapper{
+  max-width:1200px;       
+  grid-template-columns:1fr 1.5fr; 
+}
+.resume-card iframe{height:900px;}
+
+/* SERVICE */
+.service-triple .wrapper{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.service-card{background:var(--pink);border:1px solid #e08db3;border-radius:12px;padding:14px}
+
+/* AI PAGE */
+.ai-hero{background:var(--pink)}
+.prompt-box{background:#fff;border:1px dashed #ccc;border-radius:12px;padding:12px}
+
+/* color bands */
+.band-green{background:var(--green)!important}
+.band-pink{background:var(--pink)!important}
+
+/* make sure project sections explicit colors */
+section.project.band-pink{background:var(--pink)!important}
+section.project.band-green{background:var(--green)!important}
+
+@media (max-width:840px){
+  .hero .wrapper{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .two-text .wrapper{grid-template-columns:1fr}
+  .project .wrapper{grid-template-columns:1fr}
+  .project .media{order:2!important}
+  .qual-grid .wrapper{grid-template-columns:1fr}
+  .service-triple .wrapper{grid-template-columns:1fr}
+}
+@media (max-width:700px){
+  .media.media-row{grid-template-columns:1fr}
+}
+
+/* Show top nav, hide sidebar in Style 1 */
+.site-nav { display: block; }
+.sidebar  { display: none;  }
+
+/* Highlight the current page link */
+.site-nav a.active,
+.nav a.active {
+  font-weight: 700;
+  color: var(--accent2); /* or pick a bright color that fits your theme */
+  border-bottom: 2px solid var(--accent2);
+}
+
+
